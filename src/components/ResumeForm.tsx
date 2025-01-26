@@ -337,7 +337,19 @@ export default function ResumeForm({ data, onChange }: Props) {
               </div>
 
               {expandedExperiences.includes(index) && (
-                <div className="p-4 border-t space-y-4">
+                <div className="p-4 border-t">
+                  <div className="flex justify-end mb-4">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        deleteExperience(index);
+                      }}
+                      className="text-red-500 hover:text-red-700 text-sm flex items-center gap-1"
+                    >
+                      <Trash2 size={16} />
+                      Delete position
+                    </button>
+                  </div>
                   <div>
                     <label className="block text-sm text-gray-600 mb-1">Job Title</label>
                     <input
@@ -447,7 +459,19 @@ export default function ResumeForm({ data, onChange }: Props) {
               </div>
 
               {expandedEducation.includes(index) && (
-                <div className="p-4 border-t space-y-4">
+                <div className="p-4 border-t">
+                  <div className="flex justify-end mb-4">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        deleteEducation(index);
+                      }}
+                      className="text-red-500 hover:text-red-700 text-sm flex items-center gap-1"
+                    >
+                      <Trash2 size={16} />
+                      Delete education
+                    </button>
+                  </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">School</label>
                     <input
