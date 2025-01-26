@@ -272,7 +272,7 @@ export default function ResumeForm({ data, onChange }: Props) {
                   value={data.personalInfo.website}
                   onChange={(e) => handlePersonalInfoChange('website', e.target.value)}
                   className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="e.g., yourwebsite.com"
+                  placeholder="e.g., portfolio-website.com"
                 />
               </div>
               <div>
@@ -282,7 +282,7 @@ export default function ResumeForm({ data, onChange }: Props) {
                   value={data.personalInfo.linkedin}
                   onChange={(e) => handlePersonalInfoChange('linkedin', e.target.value)}
                   className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="e.g., linkedin.com/in/yourname"
+                  placeholder="e.g., linkedin.com/in/username"
                 />
               </div>
             </div>
