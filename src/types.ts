@@ -8,20 +8,28 @@ export interface PersonalInfo {
   summary: string;
 }
 
+export interface ExperienceItem {
+  company: string;
+  position: string;
+  startDate: string;
+  endDate: string;
+  description: string;
+}
+
+export interface EducationItem {
+  school: string;
+  degree: string;
+  graduationDate: string;
+  description: string;
+}
+
 export interface ResumeData {
   personalInfo: PersonalInfo;
-  experience: {
-    company: string;
-    position: string;
-    startDate: string;
-    endDate: string;
-    description: string;
-  }[];
-  education: {
-    school: string;
-    degree: string;
-    graduationDate: string;
-    description: string;
-  }[];
+  experience: ExperienceItem[];
+  education: EducationItem[];
   skills: string[];
+}
+
+export interface ValidationErrors {
+  [key: string]: string;
 }

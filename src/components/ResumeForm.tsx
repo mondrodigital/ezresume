@@ -23,6 +23,8 @@ export default function ResumeForm({ data, onChange }: Props) {
 
   const [expandedExperiences, setExpandedExperiences] = useState<number[]>([]);
   const [expandedEducation, setExpandedEducation] = useState<number[]>([]);
+  const [newSkill, setNewSkill] = useState('');
+  const [showSkillInput, setShowSkillInput] = useState(false);
 
   const toggleSection = (sectionId: string) => {
     setSections(sections.map(section => 
@@ -74,10 +76,10 @@ export default function ResumeForm({ data, onChange }: Props) {
   };
 
   const toggleEducation = (index: number) => {
-    setExpandedEducation(expanded => 
-      expanded.includes(index) 
-        ? expanded.filter(i => i !== index)
-        : [...expanded, index]
+    setExpandedEducation(prev => 
+      prev.includes(index) 
+        ? prev.filter(i => i !== index)
+        : [...prev, index]
     );
   };
 
@@ -172,267 +174,380 @@ export default function ResumeForm({ data, onChange }: Props) {
     onChange({ ...data, skills: newSkills });
   };
 
+  const handleAddEducation = () => {
+    addEducation();
+    setExpandedEducation(prev => [...prev, data.education.length - 1]);
+  };
+
+  const handleSkillInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      if (newSkill.trim()) {
+        onChange({
+          ...data,
+          skills: [...data.skills, newSkill.trim()]
+        });
+        setNewSkill('');
+        setShowSkillInput(false);
+      }
+    }
+  };
+
+  const handleRemoveSkill = (index: number) => {
+    const newSkills = data.skills.filter((_, i) => i !== index);
+    onChange({ ...data, skills: newSkills });
+  };
+
   return (
-    <div className="p-8">
-      <div className="space-y-8">
-        <div>
-          <h2 className="text-xl font-semibold text-gray-800 mb-4">Personal Information</h2>
-          <div className="grid grid-cols-2 gap-4">
-            {renderField('First Name', data.personalInfo.firstName, 
-              (value) => handlePersonalInfoChange('firstName', value))}
-            {renderField('Last Name', data.personalInfo.lastName,
-              (value) => handlePersonalInfoChange('lastName', value))}
-          </div>
-          {renderField('Email', data.personalInfo.email,
-            (value) => handlePersonalInfoChange('email', value))}
-          {renderField('Phone', data.personalInfo.phone,
-            (value) => handlePersonalInfoChange('phone', value))}
-          {renderField('Website', data.personalInfo.website,
-            (value) => handlePersonalInfoChange('website', value))}
-          {renderField('LinkedIn', data.personalInfo.linkedin,
-            (value) => handlePersonalInfoChange('linkedin', value))}
-          <div className="mb-4">
-            <label className="block text-sm text-gray-600 mb-1">Professional Summary</label>
-            <textarea
-              value={data.personalInfo.summary}
-              onChange={(e) => handlePersonalInfoChange('summary', e.target.value)}
-              placeholder="Write 2-4 short & energetic sentences to interest the reader! Mention your role, experience & most importantly - your biggest achievements, best qualities and skills."
-              className="w-full p-3 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 h-32"
-            />
-          </div>
-        </div>
-
-        <div className="mt-12">
-          <h2 className="text-xl font-semibold text-gray-800 mb-4">Employment History</h2>
-          <div className="space-y-4">
-            {data.experience.map((exp, index) => (
-              <div key={index} className="border rounded-lg overflow-hidden">
-                <div 
-                  className="flex items-center justify-between p-4 cursor-pointer hover:bg-gray-50"
-                  onClick={() => toggleExperience(index)}
-                >
-                  <div>
-                    <h3 className="font-medium text-gray-900">
-                      {exp.position || 'New Position'} at {exp.company || 'Company Name'}
-                    </h3>
-                    {!expandedExperiences.includes(index) && (
-                      <p className="text-sm text-gray-500 mt-1">
-                        {exp.startDate} - {exp.endDate}
-                      </p>
-                    )}
-                  </div>
-                  {expandedExperiences.includes(index) ? (
-                    <ChevronUp size={20} className="text-gray-500" />
-                  ) : (
-                    <ChevronDown size={20} className="text-gray-500" />
-                  )}
-                </div>
-
-                {expandedExperiences.includes(index) && (
-                  <div className="p-4 border-t">
-                    <div className="flex justify-end mb-4">
-                      <button 
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          deleteExperience(index);
-                        }}
-                        className="text-red-500 hover:text-red-700"
-                      >
-                        <Trash2 size={16} />
-                      </button>
-                    </div>
-                    <div className="grid gap-4">
-                      <div>
-                        <label className="block text-sm text-gray-600 mb-1">Job Title</label>
-                        <input
-                          type="text"
-                          value={exp.position}
-                          onChange={(e) => handleExperienceChange(index, 'position', e.target.value)}
-                          className="w-full p-2 border rounded-lg"
-                          placeholder="e.g. Marketing Manager"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm text-gray-600 mb-1">Employer</label>
-                        <input
-                          type="text"
-                          value={exp.company}
-                          onChange={(e) => handleExperienceChange(index, 'company', e.target.value)}
-                          className="w-full p-2 border rounded-lg"
-                          placeholder="e.g. Acme Inc"
-                        />
-                      </div>
-                      <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <label className="block text-sm text-gray-600 mb-1">Start Date</label>
-                          <input
-                            type="text"
-                            value={exp.startDate}
-                            onChange={(e) => handleExperienceChange(index, 'startDate', e.target.value)}
-                            className="w-full p-2 border rounded-lg"
-                            placeholder="e.g. Mar 2023"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-sm text-gray-600 mb-1">End Date</label>
-                          <input
-                            type="text"
-                            value={exp.endDate}
-                            onChange={(e) => handleExperienceChange(index, 'endDate', e.target.value)}
-                            className="w-full p-2 border rounded-lg"
-                            placeholder="e.g. Present"
-                          />
-                        </div>
-                      </div>
-                      <div>
-                        <label className="block text-sm text-gray-600 mb-1">Description</label>
-                        <textarea
-                          value={exp.description}
-                          onChange={(e) => handleExperienceChange(index, 'description', e.target.value)}
-                          className="w-full p-2 border rounded-lg h-32"
-                          placeholder="Describe your role and achievements"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-            ))}
-
-            <button
-              onClick={addExperience}
-              className="flex items-center gap-2 text-blue-600 font-medium mt-4"
-            >
-              <Plus size={16} />
-              Add one more employment
-            </button>
-          </div>
-        </div>
-
-        <div className="mt-12">
-          <h2 className="text-xl font-semibold text-gray-800 mb-4">Education</h2>
-          <div className="space-y-4">
-            {data.education.map((edu, index) => (
-              <div key={index} className="border rounded-lg overflow-hidden">
-                <div 
-                  className="flex items-center justify-between p-4 cursor-pointer hover:bg-gray-50"
-                  onClick={() => toggleEducation(index)}
-                >
-                  <div>
-                    <h3 className="font-medium text-gray-900">
-                      {edu.degree || 'New Degree'} at {edu.school || 'School Name'}
-                    </h3>
-                    {!expandedEducation.includes(index) && (
-                      <p className="text-sm text-gray-500 mt-1">
-                        {edu.graduationDate}
-                      </p>
-                    )}
-                  </div>
-                  {expandedEducation.includes(index) ? (
-                    <ChevronUp size={20} className="text-gray-500" />
-                  ) : (
-                    <ChevronDown size={20} className="text-gray-500" />
-                  )}
-                </div>
-
-                {expandedEducation.includes(index) && (
-                  <div className="p-4 border-t">
-                    <div className="flex justify-end mb-4">
-                      <button 
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          deleteEducation(index);
-                        }}
-                        className="text-red-500 hover:text-red-700"
-                      >
-                        <Trash2 size={16} />
-                      </button>
-                    </div>
-                    <div className="grid gap-4">
-                      <div>
-                        <label className="block text-sm text-gray-600 mb-1">Degree</label>
-                        <input
-                          type="text"
-                          value={edu.degree}
-                          onChange={(e) => handleEducationChange(index, 'degree', e.target.value)}
-                          className="w-full p-2 border rounded-lg"
-                          placeholder="e.g. Bachelor of Science"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm text-gray-600 mb-1">School</label>
-                        <input
-                          type="text"
-                          value={edu.school}
-                          onChange={(e) => handleEducationChange(index, 'school', e.target.value)}
-                          className="w-full p-2 border rounded-lg"
-                          placeholder="e.g. University of Example"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm text-gray-600 mb-1">Graduation Date</label>
-                        <input
-                          type="text"
-                          value={edu.graduationDate}
-                          onChange={(e) => handleEducationChange(index, 'graduationDate', e.target.value)}
-                          className="w-full p-2 border rounded-lg"
-                          placeholder="e.g. May 2023"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm text-gray-600 mb-1">Description</label>
-                        <textarea
-                          value={edu.description}
-                          onChange={(e) => handleEducationChange(index, 'description', e.target.value)}
-                          className="w-full p-2 border rounded-lg h-32"
-                          placeholder="Describe your studies, achievements, and relevant coursework"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-            ))}
-
-            <button
-              onClick={addEducation}
-              className="flex items-center gap-2 text-blue-600 font-medium mt-4"
-            >
-              <Plus size={16} />
-              Add one more education
-            </button>
-          </div>
-        </div>
-
-        <div className="mt-12">
-          <h2 className="text-xl font-semibold text-gray-800 mb-4">Skills</h2>
-          <div className="space-y-2">
-            {data.skills.map((skill, index) => (
-              <div key={index} className="flex items-center gap-2">
+    <div className="p-8 space-y-12">
+      {/* Personal Information Section */}
+      <section>
+        <h2 className="text-2xl font-bold mb-2">Personal Information</h2>
+        <p className="text-gray-500 mb-6 text-sm leading-relaxed">
+          Your contact details are the gateway to opportunities. Make them clear and professional. 
+          Recruiters spend 7.4 seconds scanning a resume—ensure they can reach you.
+        </p>
+        
+        <div className="space-y-4">
+          <div className="border rounded-lg hover:border-blue-500 transition-colors p-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm text-gray-600 mb-1">First Name</label>
                 <input
                   type="text"
-                  value={skill}
-                  onChange={(e) => handleSkillChange(index, e.target.value)}
-                  className="flex-1 p-2 border rounded-lg"
-                  placeholder="e.g. Digital Marketing Strategy"
+                  value={data.personalInfo.firstName}
+                  onChange={(e) => handlePersonalInfoChange('firstName', e.target.value)}
+                  className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
-                <button
-                  onClick={() => deleteSkill(index)}
-                  className="text-red-500 hover:text-red-700"
-                >
-                  <Trash2 size={16} />
-                </button>
               </div>
-            ))}
+              <div>
+                <label className="block text-sm text-gray-600 mb-1">Last Name</label>
+                <input
+                  type="text"
+                  value={data.personalInfo.lastName}
+                  onChange={(e) => handlePersonalInfoChange('lastName', e.target.value)}
+                  className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
+            </div>
           </div>
 
-          <button 
-            onClick={addSkill}
-            className="flex items-center gap-2 text-blue-500 font-medium mt-4"
+          <div className="border rounded-lg hover:border-blue-500 transition-colors p-4">
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm text-gray-600 mb-1">Email</label>
+                <input
+                  type="email"
+                  value={data.personalInfo.email}
+                  onChange={(e) => handlePersonalInfoChange('email', e.target.value)}
+                  className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
+              <div>
+                <label className="block text-sm text-gray-600 mb-1">Phone</label>
+                <input
+                  type="tel"
+                  value={data.personalInfo.phone}
+                  onChange={(e) => handlePersonalInfoChange('phone', e.target.value)}
+                  className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Websites & Social Links Section */}
+          <div className="border rounded-lg hover:border-blue-500 transition-colors p-4">
+            <div className="mb-4">
+              <h3 className="text-lg font-bold mb-2">Websites & Social Links</h3>
+              <p className="text-gray-500 text-sm leading-relaxed">
+                Your online presence is your extended portfolio. Link to work that proves your claims. 
+                Clean up your profiles first—recruiters will check them.
+              </p>
+            </div>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm text-gray-600 mb-1">Website</label>
+                <input
+                  type="url"
+                  value={data.personalInfo.website}
+                  onChange={(e) => handlePersonalInfoChange('website', e.target.value)}
+                  className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="mitchmondro.com"
+                />
+              </div>
+              <div>
+                <label className="block text-sm text-gray-600 mb-1">LinkedIn</label>
+                <input
+                  type="url"
+                  value={data.personalInfo.linkedin}
+                  onChange={(e) => handlePersonalInfoChange('linkedin', e.target.value)}
+                  className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="www.linkedin.com/mitch-mondro"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="border rounded-lg hover:border-blue-500 transition-colors p-4">
+            <div>
+              <label className="block text-sm text-gray-600 mb-1">Professional Summary</label>
+              <textarea
+                value={data.personalInfo.summary}
+                onChange={(e) => handlePersonalInfoChange('summary', e.target.value)}
+                rows={4}
+                className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                placeholder="Write 2-4 short & energetic sentences to interest the reader! Mention your role, experience & most importantly - your biggest achievements, best qualities and skills."
+              />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Employment History Section */}
+      <section>
+        <h2 className="text-2xl font-bold mb-2">Employment History</h2>
+        <p className="text-gray-500 mb-6 text-sm leading-relaxed">
+          Hiring managers skim for outcomes. Lead with your biggest wins, then explain how. 
+          Strong bullets follow: Changed [Thing] + Using [Method] + Result [Number].
+        </p>
+        
+        <div className="space-y-4">
+          {data.experience.map((exp, index) => (
+            <div 
+              key={index}
+              className="border rounded-lg hover:border-blue-500 transition-colors cursor-pointer"
+            >
+              <div 
+                className="p-4 flex justify-between items-center"
+                onClick={() => toggleExperience(index)}
+              >
+                <div>
+                  <h3 className="font-medium text-gray-900">
+                    {exp.position || 'Position'} at {exp.company || 'Company'}
+                  </h3>
+                  <p className="text-gray-500 text-sm">
+                    {exp.startDate || 'Start Date'} - {exp.endDate || 'End Date'}
+                  </p>
+                </div>
+                <ChevronDown 
+                  className={`transform transition-transform ${
+                    expandedExperiences.includes(index) ? 'rotate-180' : ''
+                  }`}
+                />
+              </div>
+
+              {expandedExperiences.includes(index) && (
+                <div className="p-4 border-t space-y-4">
+                  <div>
+                    <label className="block text-sm text-gray-600 mb-1">Job Title</label>
+                    <input
+                      type="text"
+                      value={exp.position}
+                      onChange={(e) => handleExperienceChange(index, 'position', e.target.value)}
+                      className="w-full p-2 border rounded-lg"
+                      placeholder="e.g. Marketing Manager"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm text-gray-600 mb-1">Employer</label>
+                    <input
+                      type="text"
+                      value={exp.company}
+                      onChange={(e) => handleExperienceChange(index, 'company', e.target.value)}
+                      className="w-full p-2 border rounded-lg"
+                      placeholder="e.g. Acme Inc"
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm text-gray-600 mb-1">Start Date</label>
+                      <input
+                        type="text"
+                        value={exp.startDate}
+                        onChange={(e) => handleExperienceChange(index, 'startDate', e.target.value)}
+                        className="w-full p-2 border rounded-lg"
+                        placeholder="e.g. Mar 2023"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm text-gray-600 mb-1">End Date</label>
+                      <input
+                        type="text"
+                        value={exp.endDate}
+                        onChange={(e) => handleExperienceChange(index, 'endDate', e.target.value)}
+                        className="w-full p-2 border rounded-lg"
+                        placeholder="e.g. Present"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-sm text-gray-600 mb-1">Description</label>
+                    <div className="text-xs text-gray-500 mb-2">
+                      Structure each point as:
+                      • What you changed (Led, Built, Improved)
+                      • How you did it (tools, team, approach)
+                      • Impact (money saved, growth achieved, time reduced)
+                    </div>
+                    <textarea
+                      value={exp.description}
+                      onChange={(e) => handleExperienceChange(index, 'description', e.target.value)}
+                      className="w-full p-2 border rounded-lg h-32"
+                      placeholder="Example:
+• Led rebranding project across 5 markets, increasing brand recognition by 40%
+• Reduced customer response time from 24hrs to 2hrs by redesigning support workflow
+• Built new sales process that increased quarterly revenue by $300K"
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+          ))}
+
+          <button
+            onClick={addExperience}
+            className="flex items-center gap-2 text-blue-500 hover:text-blue-600"
           >
-            <Plus size={16} />
-            Add one more skill
+            <Plus size={20} />
+            Add one more employment
           </button>
+        </div>
+      </section>
+
+      {/* Education Section */}
+      <section>
+        <h2 className="text-2xl font-bold mb-2">Education</h2>
+        <p className="text-gray-500 mb-6 text-sm leading-relaxed">
+          Education signals competence and commitment. But it's not just about degrees—highlight relevant 
+          coursework and projects that demonstrate practical skills.
+        </p>
+        
+        <div className="space-y-4">
+          {data.education.map((edu, index) => (
+            <div 
+              key={index}
+              className="border rounded-lg hover:border-blue-500 transition-colors cursor-pointer"
+            >
+              <div 
+                className="p-4 flex justify-between items-center"
+                onClick={() => toggleEducation(index)}
+              >
+                <div>
+                  <h3 className="font-medium text-gray-900">
+                    {edu.degree || 'Degree'} at {edu.school || 'School'}
+                  </h3>
+                  <p className="text-gray-500 text-sm">
+                    {edu.graduationDate || 'Graduation Date'}
+                  </p>
+                </div>
+                <ChevronDown 
+                  className={`transform transition-transform ${
+                    expandedEducation.includes(index) ? 'rotate-180' : ''
+                  }`}
+                />
+              </div>
+
+              {expandedEducation.includes(index) && (
+                <div className="p-4 border-t space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">School</label>
+                    <input
+                      type="text"
+                      value={edu.school}
+                      onChange={(e) => handleEducationChange(index, 'school', e.target.value)}
+                      className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Degree</label>
+                    <input
+                      type="text"
+                      value={edu.degree}
+                      onChange={(e) => handleEducationChange(index, 'degree', e.target.value)}
+                      className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Graduation Date</label>
+                    <input
+                      type="text"
+                      value={edu.graduationDate}
+                      onChange={(e) => handleEducationChange(index, 'graduationDate', e.target.value)}
+                      className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="e.g., May 2020"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                    <textarea
+                      value={edu.description}
+                      onChange={(e) => handleEducationChange(index, 'description', e.target.value)}
+                      rows={4}
+                      className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+          ))}
+
+          <button
+            onClick={handleAddEducation}
+            className="flex items-center gap-2 text-blue-500 hover:text-blue-600"
+          >
+            <Plus size={20} />
+            Add one more education
+          </button>
+        </div>
+      </section>
+
+      {/* Skills section stays the same */}
+      <div className="mt-12">
+        <div className="flex items-center gap-2 mb-2">
+          <h2 className="text-2xl font-bold">Skills</h2>
+          <span className="text-blue-500">🔗</span>
+        </div>
+        <p className="text-gray-500 mb-6 text-sm leading-relaxed">
+          Mirror the job posting's key terms. Applicant tracking systems (ATS) filter by matching skills. 
+          Be specific: "React.js" over "Programming." List your strongest skills first.
+        </p>
+
+        <div className="flex flex-wrap gap-2">
+          {data.skills.map((skill, index) => (
+            <div 
+              key={index} 
+              className="bg-gray-100 px-3 py-1 rounded-full text-sm flex items-center gap-2"
+            >
+              {skill}
+              <button
+                onClick={() => handleRemoveSkill(index)}
+                className="text-gray-400 hover:text-red-500"
+              >
+                ×
+              </button>
+            </div>
+          ))}
+          {showSkillInput ? (
+            <input
+              type="text"
+              value={newSkill}
+              onChange={(e) => setNewSkill(e.target.value)}
+              onKeyDown={handleSkillInputKeyDown}
+              onBlur={() => {
+                if (!newSkill.trim()) setShowSkillInput(false);
+              }}
+              className="px-3 py-1 text-sm border rounded-full focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              placeholder="Type and press Enter"
+              autoFocus
+            />
+          ) : (
+            <button
+              onClick={() => setShowSkillInput(true)}
+              className="flex items-center gap-2 text-blue-500 hover:text-blue-600 text-sm"
+            >
+              <Plus size={16} />
+              Add skill
+            </button>
+          )}
         </div>
       </div>
     </div>
