@@ -1,9 +1,15 @@
 import { ResumeData } from '../types';
-import { HTMLPreview } from './HTMLPreview';
 
 interface Props {
   data: ResumeData;
 }
+
+// Inline the HTMLPreview component temporarily to debug
+const HTMLPreview = ({ content }: { content: string }) => {
+  return (
+    <div dangerouslySetInnerHTML={{ __html: content }} />
+  );
+};
 
 const ResumePreview = ({ data }: Props) => {
   // Helper function to check if text has meaningful content
