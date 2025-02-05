@@ -1,149 +1,198 @@
-import React, { useRef, useEffect, useState } from 'react';
+import React from 'react';
 import { ResumeData } from '../types';
-import { shared, fontSize, colors } from '../styles/resumeStyles';
-import { ChevronDown, Plus, Minus } from 'lucide-react';
+import HTMLPreview from './HTMLPreview';
 
 interface Props {
   data: ResumeData;
-  spacingScale: number;
 }
 
-export default function ResumePreview({ data, spacingScale }: Props) {
-  const contentRef = useRef<HTMLDivElement>(null);
-  const [hasOverflow, setHasOverflow] = useState(false);
+const ResumePreview = ({ data }: Props) => {
+  // Helper function to check if text has meaningful content
+  const hasContent = (text: string) => {
+    const cleanText = text
+      .replace(/<[^>]*>/g, '')  // Remove HTML tags
+      .replace(/&nbsp;/g, ' ')  // Replace &nbsp; with space
+      .trim();
+    
+    return cleanText !== '' && 
+           cleanText !== 'This is a professional summary.' && 
+           cleanText !== 'Professional Summary';
+  };
 
-  // Check for content overflow
-  useEffect(() => {
-    if (contentRef.current) {
-      setHasOverflow(contentRef.current.scrollHeight > contentRef.current.clientHeight);
-    }
-  }, [data, spacingScale]);
+  // Helper to check if a job has content
+  const hasJobContent = (job: typeof data.experience[0]) => {
+    return job.company.trim() !== '' || 
+           job.position.trim() !== '' || 
+           job.startDate.trim() !== '' || 
+           job.endDate.trim() !== '' || 
+           hasContent(job.description);
+  };
 
-  const spacing = {
-    section: `${12 * spacingScale}px`,
-    item: `${8 * spacingScale}px`,
-    text: `${4 * spacingScale}px`,
+  const previewStyle = {
+    width: '8.5in',
+    height: '11in',
+    padding: '0.6in',
+    backgroundColor: 'white',
+    fontFamily: 'Times New Roman, serif',
+    fontSize: '9pt',
+    lineHeight: '1.2',
+    boxSizing: 'border-box' as const,
+    margin: '0 auto',
+    transform: 'scale(0.65)',
+    transformOrigin: 'top center',
+    boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+  };
+
+  // Wrapper div to handle scaling and spacing
+  const wrapperStyle = {
+    width: '100%',
+    display: 'flex',
+    flexDirection: 'column' as const,
+    alignItems: 'center',
+    marginBottom: '60px',
+    paddingTop: '10px',
+  };
+
+  const headerStyle = {
+    marginBottom: '16pt',
+    textAlign: 'center' as const,
+  };
+
+  const nameStyle = {
+    fontSize: '14pt',
+    fontWeight: 'bold',
+    marginBottom: '4pt',
+  };
+
+  const contactStyle = {
+    fontSize: '8pt',
+    color: '#333',
+    marginBottom: '16pt',
+  };
+
+  const sectionStyle = {
+    marginBottom: '20px',
+  };
+
+  const sectionTitleStyle = {
+    fontSize: '10pt',
+    fontWeight: 'bold',
+    textTransform: 'uppercase' as const,
+    borderBottom: '1px solid #000',
+    paddingBottom: '2pt',
+    marginBottom: '8pt',
+    letterSpacing: '0.05em',
+  };
+
+  const experienceItemStyle = {
+    marginBottom: '16px',
+  };
+
+  const companyStyle = {
+    fontSize: '9pt',
+    fontWeight: 'bold',
+    marginBottom: '2pt',
+  };
+
+  const positionRowStyle = {
+    display: 'flex',
+    justifyContent: 'space-between',
+    fontSize: '10pt',
+    color: '#333',
+    marginBottom: '8px',
+  };
+
+  // Add styles for bullet points
+  const bulletListStyle = {
+    margin: '4pt 0',
+    paddingLeft: '12pt',
+  };
+
+  const bulletPointStyle = {
+    fontSize: '8.5pt',
+    lineHeight: '1.2',
+    marginBottom: '2pt',
   };
 
   return (
-    <div className="relative">
-      <div className="bg-white shadow-lg" style={{ width: '612px', height: '792px', padding: '40px', fontFamily: 'Arial, sans-serif' }}>
-        <div 
-          ref={contentRef} 
-          className="h-[712px] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent"
-        >
-          <div className="text-center">
-            <h1 className="text-[20px] font-bold mb-1">
-              {data.personalInfo.firstName} {data.personalInfo.lastName}
-            </h1>
-            <div className="flex justify-center items-center text-[8px] text-[#666] gap-2">
-              {data.personalInfo.email && <span>{data.personalInfo.email}</span>}
-              {data.personalInfo.phone && (
-                <>
-                  <span>•</span>
-                  <span>{data.personalInfo.phone}</span>
-                </>
-              )}
-              {data.personalInfo.website && (
-                <>
-                  <span>•</span>
-                  <span>{data.personalInfo.website}</span>
-                </>
-              )}
-              {data.personalInfo.linkedin && (
-                <>
-                  <span>•</span>
-                  <span>{data.personalInfo.linkedin}</span>
-                </>
-              )}
+    <div style={wrapperStyle}>
+      <div style={previewStyle}>
+        <div style={headerStyle}>
+          <div style={nameStyle}>
+            {data.personalInfo.firstName} {data.personalInfo.lastName}
+          </div>
+          <div style={contactStyle}>
+            {data.personalInfo.email} • {data.personalInfo.phone} • {data.personalInfo.website} • {data.personalInfo.linkedin}
+          </div>
+        </div>
+
+        {/* Profile/Summary section */}
+        {hasContent(data.personalInfo.summary) && (
+          <div style={{ marginBottom: '24pt' }}>
+            <div style={sectionTitleStyle}>Profile</div>
+            <div style={{ fontSize: '10pt', lineHeight: '1.6' }}>
+              <HTMLPreview content={data.personalInfo.summary} />
             </div>
           </div>
+        )}
 
-          {data.personalInfo.summary && (
-            <div style={{ marginTop: spacing.section, marginBottom: spacing.section }}>
-              <h2 className="text-[14px] font-bold mb-[8px] border-b border-[#cccccc] pb-[4px]">
-                Professional Summary
-              </h2>
-              <p className="text-[8px] whitespace-pre-line">
-                {data.personalInfo.summary}
-              </p>
-            </div>
-          )}
-
-          {data.experience.length > 0 && (
-            <div style={{ marginBottom: spacing.section }}>
-              <h2 className="text-[14px] font-bold mb-[8px] border-b border-[#cccccc] pb-[4px]">
-                Experience
-              </h2>
-              <div style={{ gap: spacing.item }}>
-                {data.experience.map((exp, index) => (
-                  <div key={index} style={{ marginBottom: spacing.item }}>
-                    <div className="text-[12px] font-bold">{exp.company}</div>
-                    <div className="flex justify-between items-center">
-                      <div className="text-[10px] text-[#666]">{exp.position}</div>
-                      <div className="text-[8px] text-[#666]">
-                        {exp.startDate} - {exp.endDate}
-                      </div>
-                    </div>
-                    <p className="text-[8px] mt-1 ml-4 whitespace-pre-line">
-                      {exp.description}
-                    </p>
-                  </div>
-                ))}
+        {/* Employment section */}
+        <div style={{ marginBottom: '24pt' }}>
+          <div style={sectionTitleStyle}>Employment</div>
+          {data.experience.map((exp, idx) => (
+            <div key={idx} style={experienceItemStyle}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4pt' }}>
+                <div style={companyStyle}>{exp.position}, {exp.company}</div>
+                <div style={{ color: '#666', fontSize: '10pt' }}>{exp.startDate} — {exp.endDate}</div>
+              </div>
+              <div style={{ fontSize: '10pt', lineHeight: '1.6' }}>
+                <HTMLPreview content={exp.description} />
               </div>
             </div>
-          )}
-
-          {data.education.length > 0 && (
-            <div style={{ marginBottom: spacing.section }}>
-              <h2 className="text-[14px] font-bold mb-[8px] border-b border-[#cccccc] pb-[4px]">
-                Education
-              </h2>
-              <div style={{ gap: spacing.item }}>
-                {data.education.map((edu, index) => (
-                  <div key={index} style={{ marginBottom: spacing.item }}>
-                    <div className="text-[12px] font-bold">{edu.school}</div>
-                    <div className="flex justify-between items-center">
-                      <div className="text-[10px] text-[#666]">{edu.degree}</div>
-                      <div className="text-[8px] text-[#666]">
-                        {edu.graduationDate}
-                      </div>
-                    </div>
-                    <p className="text-[8px] mt-1 ml-4 whitespace-pre-line">
-                      {edu.description}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {data.skills.length > 0 && (
-            <div style={{ marginBottom: spacing.section }}>
-              <h2 className="text-[14px] font-bold mb-[8px] border-b border-[#cccccc] pb-[4px]">
-                Skills
-              </h2>
-              <div style={{ gap: spacing.item }}>
-                {data.skills.map((skill, index) => (
-                  <span
-                    key={index}
-                    className="text-[8px] bg-[#f0f0f0] px-[8px] py-[3px] rounded-[10px]"
-                  >
-                    {skill}
-                  </span>
-                ))}
-              </div>
-            </div>
-          )}
+          ))}
         </div>
+
+        {/* Education */}
+        {data.education.length > 0 && (
+          <div style={sectionStyle}>
+            <div style={sectionTitleStyle}>Education</div>
+            {data.education.map((edu, idx) => (
+              <div key={idx} style={experienceItemStyle}>
+                <div style={companyStyle}>{edu.school}</div>
+                <div style={positionRowStyle}>
+                  <span>{edu.degree}</span>
+                  <span>{edu.graduationDate}</span>
+                </div>
+                <HTMLPreview content={edu.description} />
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Skills */}
+        {data.skills.length > 0 && (
+          <div style={sectionStyle}>
+            <div style={sectionTitleStyle}>Skills</div>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+              {data.skills.map((skill, idx) => (
+                <span 
+                  key={idx}
+                  style={{
+                    backgroundColor: '#f0f0f0',
+                    padding: '4px 12px',
+                    borderRadius: '16px',
+                    fontSize: '14px',
+                  }}
+                >
+                  {skill}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
-
-      {/* Overflow indicator */}
-      {hasOverflow && (
-        <div className="absolute bottom-2 right-2 text-blue-600 bg-white rounded-full shadow-lg p-2 animate-bounce">
-          <ChevronDown size={20} />
-        </div>
-      )}
     </div>
   );
-}
+};
+
+export default ResumePreview; 
