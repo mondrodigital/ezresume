@@ -10,4 +10,4 @@ const HTMLPreview = ({ content }: Props) => {
   );
 };
 
-export default HTMLPreview;  // Default export
+export default HTMLPreview;

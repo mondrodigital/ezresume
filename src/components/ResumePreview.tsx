@@ -1,5 +1,5 @@
 import { ResumeData } from '../types';
-import HTMLPreview from './HTMLPreview.tsx';
+import HTMLPreview from './HTMLPreview';
 
 interface Props {
   data: ResumeData;

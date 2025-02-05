@@ -1,0 +1,13 @@
+.preview {
+  font-family: Helvetica, Arial, sans-serif;
+}
+
+.preview ul, .preview ol {
+  margin: 0;
+  padding: 0;
+  list-style-position: inside;
+}
+
+.preview li {
+  margin-bottom: 4px;
+} 

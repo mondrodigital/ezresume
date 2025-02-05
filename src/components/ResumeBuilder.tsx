@@ -1,12 +1,10 @@
-import React, { useState } from 'react';
-import ResumePDF from './ResumePDF';
+import { useState } from 'react';
 import { ResumeData } from '../types';
-import styles from './ResumeBuilder.module.css';
-import HTMLPreview from './HtmlPreview';
 import ResumePreview from './ResumePreview';
 import Split from 'react-split';
 import '../styles/Split.css';
 import '../styles/Preview.module.css';
+import HTMLPreview from './HTMLPreview';  // If needed
 
 const initialData: ResumeData = {
   personalInfo: {

@@ -1,0 +1,31 @@
+.gutter {
+  background-color: #e0e0e0;
+  position: relative;
+  transition: background-color 0.2s;
+}
+
+.gutter.gutter-horizontal {
+  cursor: col-resize;
+  width: 20px !important;
+  margin: 0 -8px;
+  border-left: 1px solid #ccc;
+  border-right: 1px solid #ccc;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.gutter.gutter-horizontal::before {
+  content: '⋮';
+  font-size: 20px;
+  color: #666;
+  line-height: 0;
+}
+
+.gutter:hover {
+  background-color: #ccc;
+}
+
+.gutter:active {
+  background-color: #bbb;
+} 

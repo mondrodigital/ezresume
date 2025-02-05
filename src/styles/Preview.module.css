@@ -1,0 +1,28 @@
+.previewContainer {
+  height: 100vh;
+  overflow-y: auto;
+  background-color: #e0e0e0;
+  padding: 2rem;
+}
+
+.previewWrapper {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  min-height: 100%;
+}
+
+.previewCard {
+  background-color: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.previewContent {
+  transform: scale(0.4);
+  transform-origin: top center;
+  width: 8.5in;
+  height: 11in;
+  overflow: hidden;
+}
