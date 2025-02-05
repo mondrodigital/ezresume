@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { ResumeData } from '../types';
 import { ChevronDown, ChevronUp, Plus, Trash2, HelpCircle } from 'lucide-react';
 import TextEditor from './TextEditor';
-import { HTMLPreview } from './HTMLPreview';  // If needed
+import { HTMLPreview } from './HTMLPreview';
 
 interface Props {
   data: ResumeData;

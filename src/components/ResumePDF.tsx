@@ -7,7 +7,7 @@ import {
 } from '@react-pdf/renderer';
 import { ResumeData } from '../types';
 import { spacing } from '../styles/resumeStyles';
-import { HTMLPreview } from './HTMLPreview';  // If needed
+import { HTMLPreview } from './HTMLPreview';
 
 interface Props {
   data: ResumeData;
