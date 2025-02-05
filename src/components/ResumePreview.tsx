@@ -1,7 +1,6 @@
 import React from 'react';
 import { ResumeData } from '../types';
-import type { HTMLPreviewProps } from './HtmlPreview';
-import HTMLPreview from './HtmlPreview';
+import HTMLPreview from './HTMLPreview';
 
 interface Props {
   data: ResumeData;
@@ -18,15 +17,6 @@ const ResumePreview = ({ data }: Props) => {
     return cleanText !== '' && 
            cleanText !== 'This is a professional summary.' && 
            cleanText !== 'Professional Summary';
-  };
-
-  // Helper to check if a job has content
-  const hasJobContent = (job: typeof data.experience[0]) => {
-    return job.company.trim() !== '' || 
-           job.position.trim() !== '' || 
-           job.startDate.trim() !== '' || 
-           job.endDate.trim() !== '' || 
-           hasContent(job.description);
   };
 
   const previewStyle = {
@@ -101,18 +91,6 @@ const ResumePreview = ({ data }: Props) => {
     fontSize: '10pt',
     color: '#333',
     marginBottom: '8px',
-  };
-
-  // Add styles for bullet points
-  const bulletListStyle = {
-    margin: '4pt 0',
-    paddingLeft: '12pt',
-  };
-
-  const bulletPointStyle = {
-    fontSize: '8.5pt',
-    lineHeight: '1.2',
-    marginBottom: '2pt',
   };
 
   return (
