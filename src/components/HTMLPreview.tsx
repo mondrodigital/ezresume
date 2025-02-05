@@ -4,7 +4,11 @@ interface Props {
   content: string;
 }
 
-const HTMLPreview = ({ content }: Props) => {
+export interface HTMLPreviewProps {
+  content: string;
+}
+
+const HTMLPreview: React.FC<HTMLPreviewProps> = ({ content }) => {
   return (
     <div
       dangerouslySetInnerHTML={{ __html: content }}

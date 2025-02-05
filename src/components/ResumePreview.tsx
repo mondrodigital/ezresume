@@ -1,5 +1,6 @@
 import React from 'react';
 import { ResumeData } from '../types';
+import type { HTMLPreviewProps } from './HTMLPreview';
 import HTMLPreview from './HTMLPreview';
 
 interface Props {
