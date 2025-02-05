@@ -1,26 +1,13 @@
-import React from 'react';
 import {
   Document,
   Page,
   Text,
   View,
   StyleSheet,
-  Font,
 } from '@react-pdf/renderer';
 import { ResumeData } from '../types';
-import { spacing, fontSize, colors } from '../styles/resumeStyles';
-
-// Register the fonts
-Font.register({
-  family: 'Arial',
-  fonts: [
-    { src: 'https://cdn.jsdelivr.net/npm/@fontsource/roboto@5.0.8/files/roboto-latin-400-normal.woff' },
-    { 
-      src: 'https://cdn.jsdelivr.net/npm/@fontsource/roboto@5.0.8/files/roboto-latin-700-normal.woff',
-      fontWeight: 'bold'
-    }
-  ]
-});
+import { spacing } from '../styles/resumeStyles';
+import { HTMLPreview } from './HTMLPreview';  // If needed
 
 interface Props {
   data: ResumeData;
@@ -29,7 +16,7 @@ interface Props {
 const styles = StyleSheet.create({
   page: {
     padding: 40,
-    fontFamily: 'Times-Roman',
+    fontFamily: 'Helvetica',
     width: '612pt', // 8.5 inches
     height: '792pt', // 11 inches
   },
@@ -103,6 +90,23 @@ const styles = StyleSheet.create({
     fontSize: 8,
     marginLeft: 16,
     marginTop: 4,
+    lineHeight: 1.4,
+  },
+  boldText: {
+    fontWeight: 900,
+  },
+  italic: {
+    fontFamily: 'Helvetica',
+    fontStyle: 'italic',
+  },
+  descriptionLink: {
+    fontSize: 8,
+    color: 'blue',
+    textDecoration: 'underline',
+  },
+  bulletPoint: {
+    width: 10,
+    marginRight: 5,
   },
   skills: {
     flexDirection: 'row',
@@ -117,19 +121,138 @@ const styles = StyleSheet.create({
   },
 });
 
-const MultiLineText = ({ children, style }: { children: string, style?: any }) => {
+/*
+  Updated parseFormattedText:
+
+  • When running in the browser, we use document.createElement to parse HTML.
+  • Otherwise we use a minimal regex-based fallback (which supports basic <p>, <strong>/<b>, and <em>/<i> tags).
+*/
+const parseFormattedText = (html: string) => {
+  if (typeof document !== 'undefined' && document.createElement) {
+    const temp = document.createElement('div');
+    temp.innerHTML = html;
+    const result: { text: string; bold: boolean; italic: boolean }[] = [];
+
+    function processNode(node: ChildNode, inherited: { bold: boolean; italic: boolean } = { bold: false, italic: false }) {
+      if (node.nodeType === Node.TEXT_NODE) {
+        const text = node.textContent || "";
+        if (text.trim()) {
+          result.push({ text, bold: inherited.bold, italic: inherited.italic });
+        }
+        return;
+      }
+      const nodeName = node.nodeName.toLowerCase();
+      let styles = { bold: inherited.bold, italic: inherited.italic };
+      if (nodeName === 'strong' || nodeName === 'b') {
+        styles.bold = true;
+      }
+      if (nodeName === 'em' || nodeName === 'i') {
+        styles.italic = true;
+      }
+      if (nodeName === 'ul' || nodeName === 'ol') {
+        Array.from(node.childNodes).forEach((child) => processNode(child, styles));
+        result.push({ text: '\n', bold: false, italic: false });
+      } else if (nodeName === 'li') {
+        result.push({ text: '• ', bold: false, italic: false });
+        Array.from(node.childNodes).forEach((child) => processNode(child, styles));
+        result.push({ text: '\n', bold: false, italic: false });
+      } else {
+        Array.from(node.childNodes).forEach((child) => processNode(child, styles));
+      }
+    }
+
+    Array.from(temp.childNodes).forEach((node) => processNode(node));
+    return result;
+  } else {
+    // Fallback parser (only supports basic tags)
+    const result: { text: string; bold: boolean; italic: boolean }[] = [];
+    html = html.replace(/<br\s*[\/]?>/gi, '\n');
+    const paragraphs = html.split(/<\/?p>/i).filter(p => p.trim() !== '');
+    paragraphs.forEach((paragraph, idx) => {
+      let remaining = paragraph;
+      while (remaining.length > 0) {
+        const boldMatch = remaining.match(/<(strong|b)>(.*?)<\/(strong|b)>/i);
+        const emMatch = remaining.match(/<(em|i)>(.*?)<\/(em|i)>/i);
+        let nextIndex = Infinity;
+        let nextTag: 'bold' | 'italic' | null = null;
+        let match;
+        if (boldMatch?.index != null && boldMatch.index < nextIndex) {
+          nextIndex = boldMatch.index;
+          nextTag = 'bold';
+          match = boldMatch;
+        }
+        if (emMatch?.index != null && emMatch.index < nextIndex) {
+          nextIndex = emMatch.index;
+          nextTag = 'italic';
+          match = emMatch;
+        }
+        if (nextIndex > 0) {
+          result.push({ text: remaining.substring(0, nextIndex), bold: false, italic: false });
+          remaining = remaining.substring(nextIndex);
+          continue;
+        }
+        if (match && match.index === 0) {
+          result.push({ text: match[2], bold: nextTag === 'bold', italic: nextTag === 'italic' });
+          remaining = remaining.substring(match[0].length);
+          continue;
+        }
+        result.push({ text: remaining, bold: false, italic: false });
+        break;
+      }
+      if (idx < paragraphs.length - 1) {
+        result.push({ text: '\n', bold: false, italic: false });
+      }
+    });
+    return result;
+  }
+};
+
+const FormattedText = ({ content }: { content: string }) => {
+  const segments = parseFormattedText(content);
   return (
-    <>
-      {children.split('\n').map((text, index) => (
-        <Text key={index} style={style}>
-          {text}
+    <Text style={styles.description}>
+      {segments.map((segment, i) => (
+        <Text
+          key={i}
+          style={{
+            fontWeight: segment.bold ? "bold" : undefined,
+            fontStyle: segment.italic ? "italic" : undefined,
+          }}
+        >
+          {segment.text}
         </Text>
       ))}
-    </>
+    </Text>
   );
 };
 
 export default function ResumePDF({ data }: Props) {
+  // Update the hasContent function to be more strict
+  const hasContent = (text: string) => {
+    // Remove HTML tags and whitespace
+    const cleanText = text
+      .replace(/<[^>]*>/g, '')  // Remove HTML tags
+      .replace(/&nbsp;/g, ' ')  // Replace &nbsp; with space
+      .trim();
+    
+    // Return true only if there's actual content
+    return cleanText !== '' && 
+           cleanText !== 'This is a professional summary.' && 
+           cleanText !== 'Professional Summary';
+  };
+
+  // Add a helper function to check if a job has any content
+  const hasJobContent = (job: typeof data.experience[0]) => {
+    return job.company.trim() !== '' || 
+           job.position.trim() !== '' || 
+           job.startDate.trim() !== '' || 
+           job.endDate.trim() !== '' || 
+           job.description.trim() !== '';
+  };
+
+  // Filter out empty jobs
+  const nonEmptyExperience = data.experience.filter(hasJobContent);
+
   return (
     <Document>
       <Page size="LETTER" style={styles.page}>
@@ -160,30 +283,26 @@ export default function ResumePDF({ data }: Props) {
           </View>
         </View>
 
-        {data.personalInfo.summary && (
+        {/* Only show Professional Summary if it has meaningful content */}
+        {data.personalInfo.summary && hasContent(data.personalInfo.summary) && (
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Professional Summary</Text>
-            <MultiLineText style={styles.description}>
-              {data.personalInfo.summary}
-            </MultiLineText>
+            <FormattedText content={data.personalInfo.summary} />
           </View>
         )}
 
-        {data.experience.length > 0 && (
+        {/* Only show Experience section if there are non-empty jobs */}
+        {nonEmptyExperience.length > 0 && (
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Experience</Text>
-            {data.experience.map((exp, index) => (
+            {nonEmptyExperience.map((exp, index) => (
               <View key={index} style={styles.experienceItem}>
                 <Text style={styles.companyName}>{exp.company}</Text>
                 <View style={styles.positionRow}>
                   <Text style={styles.position}>{exp.position}</Text>
-                  <Text style={styles.dates}>
-                    {exp.startDate} - {exp.endDate}
-                  </Text>
+                  <Text style={styles.dates}>{exp.startDate} - {exp.endDate}</Text>
                 </View>
-                <MultiLineText style={styles.description}>
-                  {exp.description}
-                </MultiLineText>
+                <FormattedText content={exp.description} />
               </View>
             ))}
           </View>
@@ -199,9 +318,7 @@ export default function ResumePDF({ data }: Props) {
                   <Text style={styles.position}>{edu.degree}</Text>
                   <Text style={styles.dates}>{edu.graduationDate}</Text>
                 </View>
-                <MultiLineText style={styles.description}>
-                  {edu.description}
-                </MultiLineText>
+                <FormattedText content={edu.description} />
               </View>
             ))}
           </View>

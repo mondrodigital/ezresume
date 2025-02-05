@@ -1,6 +1,5 @@
-import React from 'react';
 import { ResumeData } from '../types';
-import HTMLPreview from './HTMLPreview';
+import { HTMLPreview } from './HTMLPreview';
 
 interface Props {
   data: ResumeData;

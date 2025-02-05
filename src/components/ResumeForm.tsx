@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { ResumeData } from '../types';
-import { ChevronDown, ChevronUp, Plus, Trash2, Link, HelpCircle } from 'lucide-react';
+import { ChevronDown, ChevronUp, Plus, Trash2, HelpCircle } from 'lucide-react';
+import TextEditor from './TextEditor';
+import { HTMLPreview } from './HTMLPreview';  // If needed
 
 interface Props {
   data: ResumeData;
@@ -13,9 +15,48 @@ interface Section {
   isOpen: boolean;
 }
 
+const parseMultipleJobs = (text: string) => {
+  // Split the text into blocks based on "Company:" or double newlines
+  const jobBlocks = text.split(/(?=Company:|Employer:)/i).filter(block => block.trim());
+  
+  return jobBlocks.map(jobText => {
+    // Extract job details
+    const company = jobText.match(/(?:Company|Employer):\s*([^\n]+)/i)?.[1]?.trim() || '';
+    const position = jobText.match(/(?:Position|Title|Role|Job Title):\s*([^\n]+)/i)?.[1]?.trim() || '';
+    const dateMatch = jobText.match(/(?:Date|Duration|Period):\s*([^\n]+)/i);
+    let startDate = '';
+    let endDate = '';
+    
+    if (dateMatch) {
+      const dates = dateMatch[1].split('-').map(d => d.trim());
+      startDate = dates[0] || '';
+      endDate = dates[1] || 'Present';
+    }
+
+    // Get bullet points
+    const bulletPoints = jobText
+      .split('\n')
+      .map(line => line.trim())
+      .filter(line => line.startsWith('•') || line.startsWith('-') || line.startsWith('*'))
+      .map(point => point.replace(/^[•\-\*]\s*/, ''))
+      .filter(point => point.length > 0);
+
+    const description = `<ul>${bulletPoints.map(point => `<li>${point}</li>`).join('')}</ul>`;
+
+    return {
+      company,
+      position,
+      startDate,
+      endDate,
+      description
+    };
+  });
+};
+
 export default function ResumeForm({ data, onChange }: Props) {
   const [sections, setSections] = useState<Section[]>([
     { id: 'personal', title: 'Personal Information', isOpen: true },
+    { id: 'summary', title: 'Professional Summary', isOpen: false },
     { id: 'experience', title: 'Employment History', isOpen: false },
     { id: 'education', title: 'Education', isOpen: false },
     { id: 'skills', title: 'Skills', isOpen: false },
@@ -25,6 +66,7 @@ export default function ResumeForm({ data, onChange }: Props) {
   const [expandedEducation, setExpandedEducation] = useState<number[]>([]);
   const [newSkill, setNewSkill] = useState('');
   const [showSkillInput, setShowSkillInput] = useState(false);
+  const [bulkInput, setBulkInput] = useState('');
 
   const toggleSection = (sectionId: string) => {
     setSections(sections.map(section => 
@@ -124,38 +166,6 @@ export default function ResumeForm({ data, onChange }: Props) {
     }
   };
 
-  const renderSectionHeader = (section: Section) => (
-    <div className="border-b border-gray-200">
-      <div 
-        className="flex items-center justify-between p-4 cursor-pointer hover:bg-gray-50"
-        onClick={() => toggleSection(section.id)}
-      >
-        <div>
-          <h2 className="text-lg font-semibold text-gray-900">{section.title}</h2>
-          {!section.isOpen && (
-            <p className="text-sm text-gray-500 mt-1">
-              {getSectionSummary(section.id)}
-            </p>
-          )}
-        </div>
-        {section.isOpen ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
-      </div>
-    </div>
-  );
-
-  const renderField = (label: string, value: string, onChange: (value: string) => void, placeholder?: string) => (
-    <div className="mb-4">
-      <label className="block text-sm text-gray-600 mb-1">{label}</label>
-      <input
-        type="text"
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder}
-        className="w-full p-3 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-blue-500"
-      />
-    </div>
-  );
-
   const addSkill = () => {
     onChange({
       ...data,
@@ -196,6 +206,35 @@ export default function ResumeForm({ data, onChange }: Props) {
   const handleRemoveSkill = (index: number) => {
     const newSkills = data.skills.filter((_, i) => i !== index);
     onChange({ ...data, skills: newSkills });
+  };
+
+  const handleBulkImport = () => {
+    const parsedJobs = parseMultipleJobs(bulkInput);
+    if (parsedJobs.length > 0) {
+      // Add the new jobs to the existing experience array
+      const updatedExperience = [...data.experience, ...parsedJobs];
+      
+      onChange({
+        ...data,
+        experience: updatedExperience
+      });
+      
+      setBulkInput(''); // Clear the input after import
+      
+      // Expand all newly added jobs
+      const newJobIndexes = parsedJobs.map((_, index) => 
+        data.experience.length + index
+      );
+      setExpandedExperiences(prev => [...prev, ...newJobIndexes]);
+    }
+  };
+
+  const hasJobContent = (job: typeof data.experience[0]) => {
+    return job.company.trim() !== '' || 
+           job.position.trim() !== '' || 
+           job.startDate.trim() !== '' || 
+           job.endDate.trim() !== '' || 
+           job.description.trim() !== '';
   };
 
   return (
@@ -291,16 +330,96 @@ export default function ResumeForm({ data, onChange }: Props) {
           <div className="border rounded-lg hover:border-blue-500 transition-colors p-4">
             <div>
               <label className="block text-sm text-gray-600 mb-1">Professional Summary</label>
-              <textarea
+              <TextEditor
                 value={data.personalInfo.summary}
-                onChange={(e) => handlePersonalInfoChange('summary', e.target.value)}
-                rows={4}
-                className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                onChange={(value) => handlePersonalInfoChange('summary', value)}
                 placeholder="Write 2-4 short & energetic sentences to interest the reader! Mention your role, experience & most importantly - your biggest achievements, best qualities and skills."
               />
             </div>
           </div>
         </div>
+      </section>
+
+      <div style={{ 
+        marginBottom: '30px',
+        padding: '20px',
+        backgroundColor: '#f8f9fa',
+        border: '1px solid #dee2e6',
+        borderRadius: '8px'
+      }}>
+        <h3 style={{ marginBottom: '15px' }}>Import Job Descriptions</h3>
+        <textarea
+          value={bulkInput}
+          onChange={(e) => setBulkInput(e.target.value)}
+          style={{
+            width: '100%',
+            minHeight: '200px',
+            padding: '15px',
+            marginBottom: '15px',
+            border: '1px solid #ced4da',
+            borderRadius: '4px',
+            fontSize: '14px',
+            lineHeight: '1.5'
+          }}
+          placeholder={`Paste your job descriptions in this format:
+
+Company: Example Corp
+Position: Software Engineer
+Date: 2020 - 2021
+Description:
+• Led development of key features
+• Managed team of 5 developers`}
+        />
+        <button
+          onClick={handleBulkImport}
+          style={{
+            backgroundColor: '#007bff',
+            color: 'white',
+            padding: '10px 20px',
+            border: 'none',
+            borderRadius: '4px',
+            cursor: 'pointer',
+            fontSize: '16px'
+          }}
+        >
+          Import Jobs
+        </button>
+      </div>
+
+      {/* Professional Summary Section */}
+      <section>
+        <div
+          className="flex items-center justify-between cursor-pointer"
+          onClick={() => toggleSection('summary')}
+        >
+          <div className="flex items-center gap-2">
+            <h2 className="text-2xl font-bold">Professional Summary</h2>
+            <HelpCircle 
+              size={20}
+              className="text-blue-500"
+              aria-label="Highlight your key achievements and skills"
+            />
+          </div>
+          {sections.find(s => s.id === 'summary')?.isOpen ? (
+            <ChevronUp size={24} />
+          ) : (
+            <ChevronDown size={24} />
+          )}
+        </div>
+
+        {sections.find(s => s.id === 'summary')?.isOpen && (
+          <div className="mt-4">
+            <p className="text-gray-500 mb-6 text-sm leading-relaxed">
+              Your elevator pitch. Hook the employer with 3-4 powerful sentences.
+              Focus on your top achievements and value proposition.
+            </p>
+            <TextEditor
+              value={data.personalInfo.summary}
+              onChange={(value) => handlePersonalInfoChange('summary', value)}
+              placeholder="Highlight your professional journey and key achievements..."
+            />
+          </div>
+        )}
       </section>
 
       {/* Employment History Section */}
@@ -400,10 +519,9 @@ export default function ResumeForm({ data, onChange }: Props) {
                       • How you did it (tools, team, approach)
                       • Impact (money saved, growth achieved, time reduced)
                     </div>
-                    <textarea
+                    <TextEditor
                       value={exp.description}
-                      onChange={(e) => handleExperienceChange(index, 'description', e.target.value)}
-                      className="w-full p-2 border rounded-lg h-32"
+                      onChange={(value) => handleExperienceChange(index, 'description', value)}
                       placeholder="Example:
 • Led rebranding project across 5 markets, increasing brand recognition by 40%
 • Reduced customer response time from 24hrs to 2hrs by redesigning support workflow
@@ -502,11 +620,10 @@ export default function ResumeForm({ data, onChange }: Props) {
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
-                    <textarea
+                    <TextEditor
                       value={edu.description}
-                      onChange={(e) => handleEducationChange(index, 'description', e.target.value)}
-                      rows={4}
-                      className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      onChange={(value) => handleEducationChange(index, 'description', value)}
+                      placeholder="Describe your major achievements, relevant coursework, or thesis"
                     />
                   </div>
                 </div>
