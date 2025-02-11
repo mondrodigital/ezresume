@@ -1,5 +1,6 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
+import path from 'path';
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -9,13 +10,22 @@ export default defineConfig({
     exclude: ['lucide-react'],
   },
   resolve: {
+    alias: {
+      '@': path.resolve(__dirname, './src')
+    },
     extensions: ['.js', '.jsx', '.ts', '.tsx']
   },
   build: {
     outDir: 'dist',
+    manifest: true,
     rollupOptions: {
-      onwarn(warning, warn) {
-        console.log('Rollup warning:', warning);
+      input: path.resolve(__dirname, 'index.html'),
+      output: {
+        manualChunks: undefined,
+        inlineDynamic: false,
+        entryFileNames: 'assets/[name]-[hash].js',
+        chunkFileNames: 'assets/[name]-[hash].js',
+        assetFileNames: 'assets/[name]-[hash].[ext]'
       }
     }
   }
