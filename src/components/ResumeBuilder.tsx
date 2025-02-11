@@ -152,6 +152,7 @@ const parseMultipleJobs = (text: string) => {
 export default function ResumeBuilder() {
   const [resumeData, setResumeData] = useState<ResumeData>(initialData);
   const [bulkInput, setBulkInput] = useState('');
+  const [bulkSkillsInput, setBulkSkillsInput] = useState('');
 
   const handleBulkImport = () => {
     const parsedJobs = parseMultipleJobs(bulkInput);
@@ -160,6 +161,17 @@ export default function ResumeBuilder() {
       experience: parsedJobs
     }));
     setBulkInput('');
+  };
+
+  const handleBulkSkillsImport = () => {
+    const skills = bulkSkillsInput
+      .split(/[\n,]+/)
+      .map(skill => skill.trim())
+      .filter(skill => skill.length > 0);
+    console.log("Parsed skills:", skills);
+    // Append the new skills to the existing skills array.
+    setResumeData(prev => ({ ...prev, skills: [...prev.skills, ...skills] }));
+    setBulkSkillsInput('');
   };
 
   // Helper to update a given field in the resume data:
@@ -229,14 +241,7 @@ Position: Software Engineer
 Date: 2020 - 2021
 Description:
 • Led development of key features
-• Managed team of 5 developers
-
-Company: Another Company
-Position: Senior Developer
-Date: 2018 - 2020
-Description:
-• Implemented new architecture
-• Reduced system latency by 50%`}
+• Managed team of 5 developers`}
         />
         <button
           onClick={handleBulkImport}
@@ -251,6 +256,46 @@ Description:
           }}
         >
           Import Jobs
+        </button>
+      </div>
+
+      {/* New Bulk Skills Import Block */}
+      <div style={{ 
+        marginBottom: '30px',
+        padding: '20px',
+        backgroundColor: '#f8f9fa',
+        border: '1px solid #dee2e6',
+        borderRadius: '8px'
+      }}>
+        <h3 style={{ marginBottom: '15px' }}>Import Skills</h3>
+        <textarea
+          value={bulkSkillsInput}
+          onChange={(e) => setBulkSkillsInput(e.target.value)}
+          style={{
+            width: '100%',
+            minHeight: '80px',
+            padding: '15px',
+            marginBottom: '15px',
+            border: '1px solid #ced4da',
+            borderRadius: '4px',
+            fontSize: '14px',
+            lineHeight: '1.5'
+          }}
+          placeholder="Paste your skills separated by commas or newlines (e.g., JavaScript, React, TypeScript)"
+        />
+        <button
+          onClick={handleBulkSkillsImport}
+          style={{
+            backgroundColor: '#007bff',
+            color: 'white',
+            padding: '10px 20px',
+            border: 'none',
+            borderRadius: '4px',
+            cursor: 'pointer',
+            fontSize: '16px'
+          }}
+        >
+          Import Skills
         </button>
       </div>
 
@@ -330,7 +375,7 @@ Description:
         {/* Right side - Preview */}
         <div style={{ 
           flex: 1,
-          backgroundColor: '#000000',  // Changed to black
+          backgroundColor: 'transparent',  // Remove black background
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
@@ -361,11 +406,11 @@ Description:
 
           {/* Preview container */}
           <div style={{
-            backgroundColor: 'yellow',  // Changed to yellow
-            width: '200px',            // Very small width
-            height: '250px',           // Very small height
-            boxShadow: '0 4px 20px rgba(255,0,0,0.5)',  // Red shadow
-            borderRadius: '20px',      // Rounded corners
+            backgroundColor: 'white',  // Change to white
+            width: '200px',            
+            height: '250px',           
+            boxShadow: '0 4px 20px rgba(255,0,0,0.5)',  
+            borderRadius: '20px',      
             overflow: 'hidden',
             margin: '20px',
           }}>

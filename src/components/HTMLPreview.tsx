@@ -6,7 +6,7 @@ interface Props {
 
 const HTMLPreview = ({ content }: Props) => {
   return (
-    <div dangerouslySetInnerHTML={{ __html: content }} />
+    <div className="html-preview" dangerouslySetInnerHTML={{ __html: content }} />
   );
 };
 

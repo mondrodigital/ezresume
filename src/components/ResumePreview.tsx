@@ -1,5 +1,6 @@
 import { ResumeData } from '../types';
 import HTMLPreview from './HTMLPreview';
+import styles from '../styles/Preview.module.css';
 
 interface Props {
   data: ResumeData;
@@ -61,7 +62,7 @@ const ResumePreview = ({ data }: Props) => {
   };
 
   const sectionStyle = {
-    marginBottom: '20px',
+    marginBottom: '16pt',
   };
 
   const sectionTitleStyle = {
@@ -75,7 +76,7 @@ const ResumePreview = ({ data }: Props) => {
   };
 
   const experienceItemStyle = {
-    marginBottom: '16px',
+    marginBottom: '8px',
   };
 
   const companyStyle = {
@@ -151,20 +152,8 @@ const ResumePreview = ({ data }: Props) => {
         {data.skills.length > 0 && (
           <div style={sectionStyle}>
             <div style={sectionTitleStyle}>Skills</div>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-              {data.skills.map((skill, idx) => (
-                <span 
-                  key={idx}
-                  style={{
-                    backgroundColor: '#f0f0f0',
-                    padding: '4px 12px',
-                    borderRadius: '16px',
-                    fontSize: '14px',
-                  }}
-                >
-                  {skill}
-                </span>
-              ))}
+            <div style={{ fontSize: '10pt', color: '#333', backgroundColor: 'transparent' }}>
+              {data.skills.join(', ')}
             </div>
           </div>
         )}

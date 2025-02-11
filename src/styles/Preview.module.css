@@ -26,3 +26,15 @@
   height: 11in;
   overflow: hidden;
 }
+
+.html-preview,
+.html-preview * {
+  background-color: transparent !important;
+}
+
+/* Target the skills section specifically */
+.html-preview span {
+  background-color: transparent !important;
+  padding: 0 !important;
+  border-radius: 0 !important;
+}

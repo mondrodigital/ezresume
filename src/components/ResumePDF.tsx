@@ -21,7 +21,7 @@ const styles = StyleSheet.create({
     height: '792pt', // 11 inches
   },
   header: {
-    marginBottom: spacing.header,
+    marginBottom: 12,
     alignItems: 'center',
   },
   headerRow: {
@@ -55,18 +55,18 @@ const styles = StyleSheet.create({
     color: '#666666',
   },
   section: {
-    marginBottom: spacing.section,
+    marginBottom: 6,
   },
   sectionTitle: {
     fontSize: 14,
     fontWeight: 'bold',
-    marginBottom: 8,
+    marginBottom: 4,
     borderBottomWidth: 1,
     borderBottomColor: '#cccccc',
     paddingBottom: 4,
   },
   experienceItem: {
-    marginBottom: 8,
+    marginBottom: 3,
   },
   companyName: {
     fontSize: 12,
@@ -89,7 +89,7 @@ const styles = StyleSheet.create({
   description: {
     fontSize: 8,
     marginLeft: 16,
-    marginTop: 4,
+    marginTop: 0.5,
     lineHeight: 1.4,
   },
   boldText: {
@@ -115,9 +115,10 @@ const styles = StyleSheet.create({
   },
   skill: {
     fontSize: 8,
-    backgroundColor: '#f0f0f0',
-    padding: '3 8',
-    borderRadius: 10,
+    backgroundColor: 'transparent',
+  },
+  summarySection: {
+    marginBottom: 6,
   },
 });
 
@@ -285,7 +286,7 @@ export default function ResumePDF({ data }: Props) {
 
         {/* Only show Professional Summary if it has meaningful content */}
         {data.personalInfo.summary && hasContent(data.personalInfo.summary) && (
-          <View style={styles.section}>
+          <View style={[styles.section, styles.summarySection]}>
             <Text style={styles.sectionTitle}>Professional Summary</Text>
             <FormattedText content={data.personalInfo.summary} />
           </View>
@@ -324,16 +325,13 @@ export default function ResumePDF({ data }: Props) {
           </View>
         )}
 
+        {/* Skills section */}
         {data.skills.length > 0 && (
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Skills</Text>
-            <View style={styles.skills}>
-              {data.skills.map((skill, index) => (
-                <Text key={index} style={styles.skill}>
-                  {skill}
-                </Text>
-              ))}
-            </View>
+            <Text style={styles.skill}>
+              {data.skills.join(', ')}
+            </Text>
           </View>
         )}
       </Page>
