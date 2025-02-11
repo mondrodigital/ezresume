@@ -4,16 +4,7 @@ import react from '@vitejs/plugin-react';
 // https://vitejs.dev/config/
 export default defineConfig({
   base: '/ezresume/',  // Updated to match your GitHub repository name
-  plugins: [
-    react(),
-    {
-      name: 'debug-resolve',
-      resolveId(source, importer) {
-        console.log('Resolving:', source, 'from', importer);
-        return null;
-      }
-    }
-  ],
+  plugins: [react()],
   optimizeDeps: {
     exclude: ['lucide-react'],
   },
@@ -21,7 +12,14 @@ export default defineConfig({
     extensions: ['.js', '.jsx', '.ts', '.tsx']
   },
   build: {
+    outDir: 'dist',
+    assetsDir: 'assets',
     rollupOptions: {
+      output: {
+        assetFileNames: 'assets/[name].[ext]',
+        chunkFileNames: 'assets/[name].js',
+        entryFileNames: 'assets/[name].js',
+      },
       onwarn(warning, warn) {
         console.log('Rollup warning:', warning);
       }
