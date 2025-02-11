@@ -17,16 +17,7 @@ export default defineConfig({
   },
   build: {
     outDir: 'dist',
-    manifest: true,
     rollupOptions: {
-      input: path.resolve(__dirname, 'index.html'),
-      output: {
-        manualChunks: undefined,
-        inlineDynamic: false,
-        entryFileNames: 'assets/[name]-[hash].js',
-        chunkFileNames: 'assets/[name]-[hash].js',
-        assetFileNames: 'assets/[name]-[hash].[ext]'
-      }
     }
   }
 });
