@@ -38,3 +38,37 @@
   padding: 0 !important;
   border-radius: 0 !important;
 }
+
+.html-preview .bullet {
+  display: block;
+  position: relative;
+  padding-left: 12pt;
+  margin-bottom: 2pt;
+}
+
+.html-preview .list {
+  counter-reset: item;
+  margin: 0;
+  padding: 0;
+}
+
+.html-preview .bullet.numbered {
+  counter-increment: item;
+}
+
+.html-preview .bullet.numbered .bullet-point::before {
+  content: counter(item) ".";
+  position: absolute;
+  left: 0;
+}
+
+.html-preview .bullet-point {
+  position: absolute;
+  left: 0;
+}
+
+.html-preview ul, .html-preview ol {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
