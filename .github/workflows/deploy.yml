@@ -20,10 +20,14 @@ jobs:
           node-version: '18'
           
       - name: Install Dependencies
-        run: npm install
+        run: |
+          npm install
+          npm install -g vite
         
       - name: Build
-        run: npm run build
+        run: |
+          npm run build
+          ls -la dist
         
       - name: Deploy to GitHub Pages
         uses: JamesIves/github-pages-deploy-action@v4

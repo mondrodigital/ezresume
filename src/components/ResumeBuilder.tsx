@@ -375,11 +375,12 @@ Description:
         {/* Right side - Preview */}
         <div style={{ 
           flex: 1,
-          backgroundColor: 'transparent',  // Remove black background
+          backgroundColor: 'white',
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
-          minHeight: '100vh',
+          height: '100vh',
+          overflow: 'hidden',
         }}>
           {/* Controls */}
           <div style={{
@@ -387,18 +388,21 @@ Description:
             alignItems: 'center',
             gap: '20px',
             padding: '20px',
-            color: 'white',
+            width: '100%',
+            backgroundColor: 'white',
+            borderBottom: '1px solid rgba(0,0,0,0.1)',
           }}>
-            <button style={{ color: 'red', fontSize: '30px', background: 'none', border: 'none' }}>−</button>
-            <span style={{ fontSize: '30px', color: 'red' }}>Aa</span>
-            <button style={{ color: 'red', fontSize: '30px', background: 'none', border: 'none' }}>+</button>
+            <button style={{ color: '#666', fontSize: '24px', background: 'none', border: 'none' }}>−</button>
+            <span style={{ fontSize: '24px', color: '#666' }}>100%</span>
+            <button style={{ color: '#666', fontSize: '24px', background: 'none', border: 'none' }}>+</button>
             <button style={{
-              backgroundColor: 'red',
+              backgroundColor: '#007AFF',
               color: 'white',
               padding: '8px 16px',
               borderRadius: '6px',
               border: 'none',
-              fontSize: '20px',
+              fontSize: '16px',
+              marginLeft: 'auto',
             }}>
               ↓ Download PDF
             </button>
@@ -406,13 +410,10 @@ Description:
 
           {/* Preview container */}
           <div style={{
-            backgroundColor: 'white',  // Change to white
-            width: '200px',            
-            height: '250px',           
-            boxShadow: '0 4px 20px rgba(255,0,0,0.5)',  
-            borderRadius: '20px',      
-            overflow: 'hidden',
-            margin: '20px',
+            flex: 1,
+            width: '100%',
+            overflow: 'auto',
+            padding: '2rem',
           }}>
             <ResumePreview data={resumeData} />
           </div>

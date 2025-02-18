@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { ResumeData } from '../types';
-import { ChevronDown, ChevronUp, Plus, Trash2, HelpCircle } from 'lucide-react';
+import { ChevronDown, ChevronUp, Plus, Trash2, HelpCircle, RefreshCw } from 'lucide-react';
 import TextEditor from './TextEditor';
 import { HTMLPreview } from './HTMLPreview';
 
@@ -53,6 +53,44 @@ const parseMultipleJobs = (text: string) => {
   });
 };
 
+const CardSection = ({ title, children, onClear, collapsible = false, isCollapsed = false, onToggle }: {
+  title: string;
+  children: React.ReactNode;
+  onClear?: () => void;
+  collapsible?: boolean;
+  isCollapsed?: boolean;
+  onToggle?: () => void;
+}) => (
+  <div className="bg-white rounded-xl shadow-lg overflow-hidden transition-all duration-200 hover:shadow-xl">
+    <div className="p-6 bg-gradient-to-r from-blue-500 to-blue-600">
+      <div className="flex justify-between items-center">
+        <h2 className="text-2xl font-bold text-white">{title}</h2>
+        <div className="flex gap-2">
+          {onClear && (
+            <button
+              onClick={onClear}
+              className="text-white hover:text-red-200 transition-colors"
+            >
+              <RefreshCw size={20} />
+            </button>
+          )}
+          {collapsible && (
+            <button
+              onClick={onToggle}
+              className="text-white hover:text-blue-200 transition-colors"
+            >
+              {isCollapsed ? <ChevronDown size={24} /> : <ChevronUp size={24} />}
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
+    <div className={`p-6 ${isCollapsed ? 'hidden' : ''}`}>
+      {children}
+    </div>
+  </div>
+);
+
 export default function ResumeForm({ data, onChange }: Props) {
   const [sections, setSections] = useState<Section[]>([
     { id: 'personal', title: 'Personal Information', isOpen: true },
@@ -67,6 +105,7 @@ export default function ResumeForm({ data, onChange }: Props) {
   const [newSkill, setNewSkill] = useState('');
   const [showSkillInput, setShowSkillInput] = useState(false);
   const [bulkInput, setBulkInput] = useState('');
+  const [isPersonalCollapsed, setIsPersonalCollapsed] = useState(false);
 
   const toggleSection = (sectionId: string) => {
     setSections(sections.map(section => 
@@ -237,16 +276,28 @@ export default function ResumeForm({ data, onChange }: Props) {
            job.description.trim() !== '';
   };
 
+  const clearWorkHistory = () => {
+    onChange({
+      ...data,
+      experience: []
+    });
+  };
+
+  const clearSkills = () => {
+    onChange({
+      ...data,
+      skills: []
+    });
+  };
+
   return (
-    <div className="p-8 space-y-12">
-      {/* Personal Information Section */}
-      <section>
-        <h2 className="text-2xl font-bold mb-2">Personal Information</h2>
-        <p className="text-gray-500 mb-6 text-sm leading-relaxed">
-          Your contact details are the gateway to opportunities. Make them clear and professional. 
-          Recruiters spend 7.4 seconds scanning a resume—ensure they can reach you.
-        </p>
-        
+    <div className="p-8 space-y-8 bg-gray-100 min-h-screen">
+      <CardSection 
+        title="Personal Information"
+        collapsible={true}
+        isCollapsed={isPersonalCollapsed}
+        onToggle={() => setIsPersonalCollapsed(!isPersonalCollapsed)}
+      >
         <div className="space-y-4">
           <div className="border rounded-lg hover:border-blue-500 transition-colors p-4">
             <div className="grid grid-cols-2 gap-4">
@@ -256,7 +307,7 @@ export default function ResumeForm({ data, onChange }: Props) {
                   type="text"
                   value={data.personalInfo.firstName}
                   onChange={(e) => handlePersonalInfoChange('firstName', e.target.value)}
-                  className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className={inputStyles}
                 />
               </div>
               <div>
@@ -265,7 +316,7 @@ export default function ResumeForm({ data, onChange }: Props) {
                   type="text"
                   value={data.personalInfo.lastName}
                   onChange={(e) => handlePersonalInfoChange('lastName', e.target.value)}
-                  className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className={inputStyles}
                 />
               </div>
             </div>
@@ -279,7 +330,7 @@ export default function ResumeForm({ data, onChange }: Props) {
                   type="email"
                   value={data.personalInfo.email}
                   onChange={(e) => handlePersonalInfoChange('email', e.target.value)}
-                  className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className={inputStyles}
                 />
               </div>
               <div>
@@ -288,7 +339,7 @@ export default function ResumeForm({ data, onChange }: Props) {
                   type="tel"
                   value={data.personalInfo.phone}
                   onChange={(e) => handlePersonalInfoChange('phone', e.target.value)}
-                  className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className={inputStyles}
                 />
               </div>
             </div>
@@ -310,7 +361,7 @@ export default function ResumeForm({ data, onChange }: Props) {
                   type="url"
                   value={data.personalInfo.website}
                   onChange={(e) => handlePersonalInfoChange('website', e.target.value)}
-                  className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className={inputStyles}
                   placeholder="e.g., portfolio-website.com"
                 />
               </div>
@@ -320,7 +371,7 @@ export default function ResumeForm({ data, onChange }: Props) {
                   type="url"
                   value={data.personalInfo.linkedin}
                   onChange={(e) => handlePersonalInfoChange('linkedin', e.target.value)}
-                  className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className={inputStyles}
                   placeholder="e.g., linkedin.com/in/username"
                 />
               </div>
@@ -338,7 +389,7 @@ export default function ResumeForm({ data, onChange }: Props) {
             </div>
           </div>
         </div>
-      </section>
+      </CardSection>
 
       <div style={{ 
         marginBottom: '30px',
@@ -386,50 +437,10 @@ Description:
         </button>
       </div>
 
-      {/* Professional Summary Section */}
-      <section>
-        <div
-          className="flex items-center justify-between cursor-pointer"
-          onClick={() => toggleSection('summary')}
-        >
-          <div className="flex items-center gap-2">
-            <h2 className="text-2xl font-bold">Professional Summary</h2>
-            <HelpCircle 
-              size={20}
-              className="text-blue-500"
-              aria-label="Highlight your key achievements and skills"
-            />
-          </div>
-          {sections.find(s => s.id === 'summary')?.isOpen ? (
-            <ChevronUp size={24} />
-          ) : (
-            <ChevronDown size={24} />
-          )}
-        </div>
-
-        {sections.find(s => s.id === 'summary')?.isOpen && (
-          <div className="mt-4">
-            <p className="text-gray-500 mb-6 text-sm leading-relaxed">
-              Your elevator pitch. Hook the employer with 3-4 powerful sentences.
-              Focus on your top achievements and value proposition.
-            </p>
-            <TextEditor
-              value={data.personalInfo.summary}
-              onChange={(value) => handlePersonalInfoChange('summary', value)}
-              placeholder="Highlight your professional journey and key achievements..."
-            />
-          </div>
-        )}
-      </section>
-
-      {/* Employment History Section */}
-      <section>
-        <h2 className="text-2xl font-bold mb-2">Employment History</h2>
-        <p className="text-gray-500 mb-6 text-sm leading-relaxed">
-          Hiring managers skim for outcomes. Lead with your biggest wins, then explain how. 
-          Strong bullets follow: Changed [Thing] + Using [Method] + Result [Number].
-        </p>
-        
+      <CardSection
+        title="Employment History"
+        onClear={clearWorkHistory}
+      >
         <div className="space-y-4">
           {data.experience.map((exp, index) => (
             <div 
@@ -463,7 +474,7 @@ Description:
                         e.stopPropagation();
                         deleteExperience(index);
                       }}
-                      className="text-red-500 hover:text-red-700 text-sm flex items-center gap-1"
+                      className={deleteButtonStyles}
                     >
                       <Trash2 size={16} />
                       Delete position
@@ -475,7 +486,7 @@ Description:
                       type="text"
                       value={exp.position}
                       onChange={(e) => handleExperienceChange(index, 'position', e.target.value)}
-                      className="w-full p-2 border rounded-lg"
+                      className={inputStyles}
                       placeholder="e.g. Marketing Manager"
                     />
                   </div>
@@ -485,7 +496,7 @@ Description:
                       type="text"
                       value={exp.company}
                       onChange={(e) => handleExperienceChange(index, 'company', e.target.value)}
-                      className="w-full p-2 border rounded-lg"
+                      className={inputStyles}
                       placeholder="e.g. Acme Inc"
                     />
                   </div>
@@ -496,7 +507,7 @@ Description:
                         type="text"
                         value={exp.startDate}
                         onChange={(e) => handleExperienceChange(index, 'startDate', e.target.value)}
-                        className="w-full p-2 border rounded-lg"
+                        className={inputStyles}
                         placeholder="e.g. Mar 2023"
                       />
                     </div>
@@ -506,7 +517,7 @@ Description:
                         type="text"
                         value={exp.endDate}
                         onChange={(e) => handleExperienceChange(index, 'endDate', e.target.value)}
-                        className="w-full p-2 border rounded-lg"
+                        className={inputStyles}
                         placeholder="e.g. Present"
                       />
                     </div>
@@ -535,22 +546,17 @@ Description:
 
           <button
             onClick={addExperience}
-            className="flex items-center gap-2 text-blue-500 hover:text-blue-600"
+            className={addButtonStyles}
           >
             <Plus size={20} />
             Add one more employment
           </button>
         </div>
-      </section>
+      </CardSection>
 
-      {/* Education Section */}
-      <section>
-        <h2 className="text-2xl font-bold mb-2">Education</h2>
-        <p className="text-gray-500 mb-6 text-sm leading-relaxed">
-          Education signals competence and commitment. But it's not just about degrees—highlight relevant 
-          coursework and projects that demonstrate practical skills.
-        </p>
-        
+      <CardSection
+        title="Education"
+      >
         <div className="space-y-4">
           {data.education.map((edu, index) => (
             <div 
@@ -584,7 +590,7 @@ Description:
                         e.stopPropagation();
                         deleteEducation(index);
                       }}
-                      className="text-red-500 hover:text-red-700 text-sm flex items-center gap-1"
+                      className={deleteButtonStyles}
                     >
                       <Trash2 size={16} />
                       Delete education
@@ -596,7 +602,7 @@ Description:
                       type="text"
                       value={edu.school}
                       onChange={(e) => handleEducationChange(index, 'school', e.target.value)}
-                      className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className={inputStyles}
                     />
                   </div>
                   <div>
@@ -605,7 +611,7 @@ Description:
                       type="text"
                       value={edu.degree}
                       onChange={(e) => handleEducationChange(index, 'degree', e.target.value)}
-                      className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className={inputStyles}
                     />
                   </div>
                   <div>
@@ -614,7 +620,7 @@ Description:
                       type="text"
                       value={edu.graduationDate}
                       onChange={(e) => handleEducationChange(index, 'graduationDate', e.target.value)}
-                      className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className={inputStyles}
                       placeholder="e.g., May 2020"
                     />
                   </div>
@@ -633,25 +639,18 @@ Description:
 
           <button
             onClick={handleAddEducation}
-            className="flex items-center gap-2 text-blue-500 hover:text-blue-600"
+            className={addButtonStyles}
           >
             <Plus size={20} />
             Add one more education
           </button>
         </div>
-      </section>
+      </CardSection>
 
-      {/* Skills section stays the same */}
-      <div className="mt-12">
-        <div className="flex items-center gap-2 mb-2">
-          <h2 className="text-2xl font-bold">Skills</h2>
-          <span className="text-blue-500">🔗</span>
-        </div>
-        <p className="text-gray-500 mb-6 text-sm leading-relaxed">
-          Mirror the job posting's key terms. Applicant tracking systems (ATS) filter by matching skills. 
-          Be specific: "React.js" over "Programming." List your strongest skills first.
-        </p>
-
+      <CardSection
+        title="Skills"
+        onClear={clearSkills}
+      >
         <div className="flex flex-wrap gap-2">
           {data.skills.map((skill, index) => (
             <div 
@@ -661,7 +660,7 @@ Description:
               {skill}
               <button
                 onClick={() => handleRemoveSkill(index)}
-                className="text-gray-400 hover:text-red-500"
+                className={deleteButtonStyles}
               >
                 ×
               </button>
@@ -676,21 +675,26 @@ Description:
               onBlur={() => {
                 if (!newSkill.trim()) setShowSkillInput(false);
               }}
-              className="px-3 py-1 text-sm border rounded-full focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className={inputStyles}
               placeholder="Type and press Enter"
               autoFocus
             />
           ) : (
             <button
               onClick={() => setShowSkillInput(true)}
-              className="flex items-center gap-2 text-blue-500 hover:text-blue-600 text-sm"
+              className={addButtonStyles}
             >
               <Plus size={16} />
               Add skill
             </button>
           )}
         </div>
-      </div>
+      </CardSection>
     </div>
   );
 }
+
+const inputStyles = "w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-gray-50 hover:bg-white transition-colors";
+const buttonStyles = "flex items-center gap-2 px-4 py-2 rounded-lg transition-colors";
+const addButtonStyles = `${buttonStyles} text-blue-500 hover:bg-blue-50`;
+const deleteButtonStyles = `${buttonStyles} text-red-500 hover:bg-red-50`;
